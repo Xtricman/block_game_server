@@ -1,12 +1,10 @@
 ///石头
 use super::Value;
 use super::IDModule;
-use super::TypeID;
 use super::Tag;
 
 pub enum Module {}
 impl IDModule for Module {
-    const TYPE_ID: TypeID = 1;
     const TAG_LIST: &'static [Tag] = &[Tag::Stone, Tag::CanBeBurn];
     type BlockValue = Block;
     type EntityValue = ();

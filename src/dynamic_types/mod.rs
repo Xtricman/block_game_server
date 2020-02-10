@@ -1,6 +1,5 @@
 ///每个ID写一个类型，实现这个Trait，此类型作为模块使用
 pub trait IDModule: 'static {
-    const TYPE_ID: TypeID;
     const TAG_LIST: &'static [Tag];
     type BlockValue: Value; //若此ID不可作为方块，则使用()来禁用
     type EntityValue: Value; //若此ID不可作为实体，则使用()来禁用
@@ -10,14 +9,13 @@ pub trait IDModule: 'static {
 ///描述ID模块的ID，Tags，各个函数
 #[derive(Copy, Clone)]
 pub struct IDModuleInfo {
-    type_id: TypeID,
     tags: &'static [Tag],
     block_functions: Option<Functions>,
     entity_functions: Option<Functions>,
     item_functions: Option<Functions>,
 }
 
-///ID类型，是一个编译期字符串
+///ID类型
 pub type TypeID = u16;
 
 ///某个ID拥有的方块、物品、实体标签
@@ -67,7 +65,6 @@ const fn into_id_module_info<T: IDModule>() -> IDModuleInfo {
         drop: T::ItemValue::drop,
     })} else {None};
     IDModuleInfo {
-        type_id: T::TYPE_ID,
         tags: T::TAG_LIST,
         block_functions: block,
         entity_functions: entity,
@@ -92,8 +89,8 @@ impl Value for () {
     fn serialize_into(_dynamic_value: *const ()) -> Vec<u8> {unreachable!("IMPOSSIBLE TO TO CALL TYPE () AS VALUE")}
     fn drop(_dynamic_value: *mut ()) {unreachable!("IMPOSSIBLE TO TO CALL TYPE () AS VALUE")}
 }
-trait DynamicValue: Drop {
-    fn deserialize_from(src: &[u8], type_id: TypeID) -> Option<*mut ()>;
+trait DynamicValue: Drop+Sized {
+    fn deserialize_from(src: &[u8], type_id: TypeID) -> Option<Self>;
     fn serialize_into(&self) -> Vec<u8>;
 }
 #[derive(Copy, Clone)]
@@ -102,8 +99,6 @@ struct Functions {
     deserialize_from: fn(&[u8]) -> *mut (),
     serialize_into: fn(*const ()) -> Vec<u8>,
 }
-
-
 
 
 
@@ -140,9 +135,11 @@ static FEATURE_MAP: [IDModuleInfo; 2] = [
 ];
 
 pub fn filter_ids_by_tag(tag: Tag) -> Vec<TypeID> {
+    use std::convert::TryFrom;
     let mut r = Vec::<TypeID>::with_capacity(4);
-    for i in &FEATURE_MAP {
-        if i.tags.contains(&tag) {r.push(i.type_id)}
+    let len = u16::try_from(std::mem::size_of_val(&FEATURE_MAP)/std::mem::size_of::<IDModuleInfo>()).unwrap();    
+    for i in 0..len {
+        if FEATURE_MAP[i as usize].tags.contains(&tag) {r.push(i)}
     }
     r
 }
@@ -151,8 +148,6 @@ pub fn get_type_info_by_type_id(type_id: TypeID) -> Option<IDModuleInfo> {
     let i = usize::from(type_id);
     if i >= FEATURE_MAP.len() {None} else {Some(FEATURE_MAP[i])}
 }
-
-
 
 
 
@@ -190,9 +185,14 @@ impl Drop for BlockDynamicValue {
     }
 }
 impl DynamicValue for BlockDynamicValue {
-    fn deserialize_from(src: &[u8], type_id: TypeID) -> Option<*mut ()> {
+    fn deserialize_from(src: &[u8], type_id: TypeID) -> Option<Self> {
         if let Some(x) = get_type_info_by_type_id(type_id) {
-            if let Some(y) = x.block_functions {Some((y.deserialize_from)(src))} else {None}
+            if let Some(y) = x.block_functions {
+                Some(Self {
+                    data: (y.deserialize_from)(src),
+                    type_id: type_id,
+                })
+            } else {None}
         } else {None}
     }
     fn serialize_into(&self) -> Vec<u8> {
@@ -225,9 +225,14 @@ impl Drop for EntityDynamicValue {
     }
 }
 impl DynamicValue for EntityDynamicValue {
-    fn deserialize_from(src: &[u8], type_id: TypeID) -> Option<*mut ()> {
+    fn deserialize_from(src: &[u8], type_id: TypeID) -> Option<Self> {
         if let Some(x) = get_type_info_by_type_id(type_id) {
-            if let Some(y) = x.entity_functions {Some((y.deserialize_from)(src))} else {None}
+            if let Some(y) = x.entity_functions {
+                Some(Self {
+                    data: (y.deserialize_from)(src),
+                    type_id: type_id,
+                })
+            } else {None}
         } else {None}
     }
     fn serialize_into(&self) -> Vec<u8> {
@@ -264,9 +269,14 @@ impl Drop for ItemDynamicValue {
     }
 }
 impl DynamicValue for ItemDynamicValue {
-    fn deserialize_from(src: &[u8], type_id: TypeID) -> Option<*mut ()> {
+    fn deserialize_from(src: &[u8], type_id: TypeID) -> Option<Self> {
         if let Some(x) = get_type_info_by_type_id(type_id) {
-            if let Some(y) = x.item_functions {Some((y.deserialize_from)(src))} else {None}
+            if let Some(y) = x.item_functions {
+                Some(Self {
+                    data: (y.deserialize_from)(src),
+                    type_id: type_id,
+                })
+            } else {None}
         } else {None}
     }
     fn serialize_into(&self) -> Vec<u8> {

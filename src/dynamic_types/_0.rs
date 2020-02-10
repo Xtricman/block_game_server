@@ -1,13 +1,10 @@
 ///经验球
 use super::Value;
-
 use super::IDModule;
-use super::TypeID;
 use super::Tag;
 
 pub enum Module {}
 impl IDModule for Module {
-    const TYPE_ID: TypeID = 0;
     const TAG_LIST: &'static [Tag] = &[];
     type BlockValue = ();
     type EntityValue = Entity;
