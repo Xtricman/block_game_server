@@ -54,19 +54,16 @@ const fn into_id_module_info<T: IDModule>() -> IDModuleInfo {
     let block = if !type_eq::<T::BlockValue, ()>() {Some(Functions{
         deserialize_from: T::BlockValue::deserialize_from,
         serialize_into: T::BlockValue::serialize_into,
-        serialize_size_hint: T::BlockValue::SERIALIZED_SIZE_HINT,
         drop: T::BlockValue::drop,
     })} else {None};
     let entity = if !type_eq::<T::EntityValue, ()>() {Some(Functions{
         deserialize_from: T::EntityValue::deserialize_from,
         serialize_into: T::EntityValue::serialize_into,
-        serialize_size_hint: T::EntityValue::SERIALIZED_SIZE_HINT,
         drop: T::EntityValue::drop,
     })} else {None};
     let item = if !type_eq::<T::ItemValue, ()>() {Some(Functions{
         deserialize_from: T::ItemValue::deserialize_from,
         serialize_into: T::ItemValue::serialize_into,
-        serialize_size_hint: T::ItemValue::SERIALIZED_SIZE_HINT,
         drop: T::ItemValue::drop,
     })} else {None};
     IDModuleInfo {
@@ -86,13 +83,11 @@ const fn into_id_module_info<T: IDModule>() -> IDModuleInfo {
 
 ///每个NBT数据类型皆应实现此Trait
 pub trait Value: std::fmt::Debug {
-    const SERIALIZED_SIZE_HINT: usize; //此NBT数据类型序列化的预估大小
     fn deserialize_from(src: &[u8]) -> *mut ();//必须正确实现，返回的type_id必须正确，不允许失败，无论src为何都必须正确alloc heap并返回*mut ()
     fn serialize_into(dynamic_value: *const ()) -> Vec<u8>;//不允许失败，因为内存中的DynamicValue的数据一定处于正确的状态
     fn drop(dynamic_value: *mut ());//析构函数
 }
 impl Value for () {
-    const SERIALIZED_SIZE_HINT: usize = 0;
     fn deserialize_from(_src: &[u8]) -> *mut () {unreachable!("IMPOSSIBLE TO TO CALL TYPE () AS VALUE")}
     fn serialize_into(_dynamic_value: *const ()) -> Vec<u8> {unreachable!("IMPOSSIBLE TO TO CALL TYPE () AS VALUE")}
     fn drop(_dynamic_value: *mut ()) {unreachable!("IMPOSSIBLE TO TO CALL TYPE () AS VALUE")}
@@ -106,7 +101,6 @@ struct Functions {
     drop: fn(*mut ()),
     deserialize_from: fn(&[u8]) -> *mut (),
     serialize_into: fn(*const ()) -> Vec<u8>,
-    serialize_size_hint: usize,
 }
 
 

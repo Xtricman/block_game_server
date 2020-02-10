@@ -21,7 +21,6 @@ pub struct Entity {
     exp_amount: u64,
 }
 impl Value for Entity {
-    const SERIALIZED_SIZE_HINT: usize = 0;
     fn deserialize_from(src: &[u8]) -> *mut () {
         if src.len() < 8 {
             Box::into_raw(Box::new(0u64)) as *mut ()

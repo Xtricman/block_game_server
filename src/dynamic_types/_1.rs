@@ -18,12 +18,11 @@ impl IDModule for Module {
 #[derive(std::fmt::Debug)]
 pub struct Block {}
 impl Value for Block {
-    const SERIALIZED_SIZE_HINT: usize = 0;
     fn deserialize_from(_src: &[u8]) -> *mut () {
         std::ptr::null_mut()
     }
     fn serialize_into(_dynamic_value: *const ()) -> Vec<u8> {
-        Vec::with_capacity(Self::SERIALIZED_SIZE_HINT)
+        Vec::with_capacity(0)
     }
     fn drop(_dynamic_value: *mut ()) {}
 }
@@ -33,12 +32,11 @@ impl Value for Block {
 #[derive(std::fmt::Debug)]
 pub struct Item {}
 impl Value for Item {
-    const SERIALIZED_SIZE_HINT: usize = 0;
     fn deserialize_from(_src: &[u8]) -> *mut () {
         std::ptr::null_mut()
     }
     fn serialize_into(_dynamic_value: *const ()) -> Vec<u8> {
-        Vec::with_capacity(Self::SERIALIZED_SIZE_HINT)
+        Vec::with_capacity(0)
     }
     fn drop(_dynamic_types: *mut ()) {}
 }
