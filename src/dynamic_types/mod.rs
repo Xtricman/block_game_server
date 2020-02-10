@@ -91,12 +91,12 @@ struct Functions {
 
 
 ///TODO：编译期生成FEATURE_MAP，确保写了的ID模块全都被转换为TypeInfo
-pub mod _0;
-pub mod _1;
+pub mod exp_orb;
+pub mod stone;
 
 static FEATURE_MAP: [IDModuleInfo; 2] = [
-    into_id_module_info::<_0::Module>(),
-    into_id_module_info::<_1::Module>(),
+    into_id_module_info::<exp_orb::Module>(),
+    into_id_module_info::<stone::Module>(),
 ];
 
 ///根据Tag筛选ID
