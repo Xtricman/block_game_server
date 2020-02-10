@@ -51,19 +51,19 @@ pub const fn type_eq<T: ?Sized, U: ?Sized>() -> bool {
 
 ///将一个ID模块转换为IDModuleInfo值
 const fn into_id_module_info<T: IDModule>() -> IDModuleInfo {
-    let block = if type_eq::<T::BlockValue, ()>() {Some(BlockFunctions{
+    let block = if !type_eq::<T::BlockValue, ()>() {Some(BlockFunctions{
         deserialize_from: T::BlockValue::deserialize_from,
         serialize_into: T::BlockValue::serialize_into,
         serialize_size_hint: T::BlockValue::SERIALIZED_SIZE_HINT,
         drop: T::BlockValue::drop,
     })} else {None};
-    let entity = if type_eq::<T::EntityValue, ()>() {Some(EntityFunctions{
+    let entity = if !type_eq::<T::EntityValue, ()>() {Some(EntityFunctions{
         deserialize_from: T::EntityValue::deserialize_from,
         serialize_into: T::EntityValue::serialize_into,
         serialize_size_hint: T::EntityValue::SERIALIZED_SIZE_HINT,
         drop: T::EntityValue::drop,
     })} else {None};
-    let item = if type_eq::<T::ItemValue, ()>() {Some(ItemFunctions{
+    let item = if !type_eq::<T::ItemValue, ()>() {Some(ItemFunctions{
         deserialize_from: T::ItemValue::deserialize_from,
         serialize_into: T::ItemValue::serialize_into,
         serialize_size_hint: T::ItemValue::SERIALIZED_SIZE_HINT,
@@ -172,13 +172,13 @@ pub trait BlockValue: std::fmt::Debug {
 impl BlockValue for () {
     const SERIALIZED_SIZE_HINT: usize = 0;
     fn deserialize_from(_src: &[u8]) -> BlockDynamicValue {
-        unimplemented!()
+        unimplemented!("TYPE () CAN'T BE USED AS DATA AT ALL, USE EMPTY STRUCT INSTEAD")
     }
     fn serialize_into(_dynamic_value: &BlockDynamicValue) -> Vec<u8> {
-        unimplemented!()
+        unimplemented!("TYPE () CAN'T BE USED AS DATA AT ALL, USE EMPTY STRUCT INSTEAD")
     }
     fn drop(_dynamic_value: &mut BlockDynamicValue) {
-        unimplemented!()
+        unimplemented!("TYPE () CAN'T BE USED AS DATA AT ALL, USE EMPTY STRUCT INSTEAD")
     }  
 }
 #[derive(Copy, Clone)]
@@ -232,13 +232,13 @@ pub trait EntityValue: std::fmt::Debug {
 impl EntityValue for () {
     const SERIALIZED_SIZE_HINT: usize = 0;
     fn deserialize_from(_src: &[u8]) -> EntityDynamicValue {
-        unimplemented!()
+        unimplemented!("TYPE () CAN'T BE USED AS DATA AT ALL, USE EMPTY STRUCT INSTEAD")
     }
     fn serialize_into(_dynamic_value: &EntityDynamicValue) -> Vec<u8> {
-        unimplemented!()
+        unimplemented!("TYPE () CAN'T BE USED AS DATA AT ALL, USE EMPTY STRUCT INSTEAD")
     }
     fn drop(_dynamic_value: &mut EntityDynamicValue) {
-        unimplemented!()
+        unimplemented!("TYPE () CAN'T BE USED AS DATA AT ALL, USE EMPTY STRUCT INSTEAD")
     }
 }
 #[derive(Copy, Clone)]
@@ -295,13 +295,13 @@ pub trait ItemValue: std::fmt::Debug {
 impl ItemValue for () {
     const SERIALIZED_SIZE_HINT: usize = 0;
     fn deserialize_from(_src: &[u8]) -> ItemDynamicValue {
-        unimplemented!()
+        unimplemented!("TYPE () CAN'T BE USED AS DATA AT ALL, USE EMPTY STRUCT INSTEAD")
     }
     fn serialize_into(_dynamic_value: &ItemDynamicValue) -> Vec<u8> {
-        unimplemented!()
+        unimplemented!("TYPE () CAN'T BE USED AS DATA AT ALL, USE EMPTY STRUCT INSTEAD")
     }
     fn drop(_dynamic_value: &mut ItemDynamicValue) {
-        unimplemented!()
+        unimplemented!("TYPE () CAN'T BE USED AS DATA AT ALL, USE EMPTY STRUCT INSTEAD")
     }
 }
 #[derive(Copy, Clone)]
