@@ -82,7 +82,7 @@ const fn into_id_module_info<T: IDModule>() -> IDModuleInfo {
 
 
 ///每个NBT数据类型皆应实现此Trait
-pub trait Value: std::fmt::Debug {
+pub trait Value: std::fmt::Debug+Eq+Clone {
     fn deserialize_from(src: &[u8]) -> *mut ();//必须正确实现，返回的type_id必须正确，不允许失败，无论src为何都必须正确alloc heap并返回*mut ()
     fn serialize_into(dynamic_value: *const ()) -> Vec<u8>;//不允许失败，因为内存中的DynamicValue的数据一定处于正确的状态
     fn drop(dynamic_value: *mut ());//析构函数

@@ -5,7 +5,7 @@ use super::IDModule;
 use super::TypeID;
 use super::Tag;
 
-pub struct Module {}
+pub enum Module {}
 impl IDModule for Module {
     const TYPE_ID: TypeID = 0;
     const TAG_LIST: &'static [Tag] = &[];
@@ -16,7 +16,7 @@ impl IDModule for Module {
 
 
 
-#[derive(std::fmt::Debug)]
+#[derive(std::fmt::Debug, PartialEq, Eq, Clone)]
 pub struct Entity {
     exp_amount: u64,
 }
