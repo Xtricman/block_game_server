@@ -1,20 +1,3 @@
-///每个ID写一个类型，实现这个Trait，此类型作为模块使用
-pub trait IDModule: 'static {
-    const TAG_LIST: &'static [Tag];
-    type BlockValue: Value; //若此ID不可作为方块，则使用()来禁用
-    type EntityValue: Value; //若此ID不可作为实体，则使用()来禁用
-    type ItemValue: Value; //若此ID不可作为物品，则使用()来禁用
-}
-
-///描述ID模块的ID，Tags，各个函数
-#[derive(Copy, Clone)]
-pub struct IDModuleInfo {
-    tags: &'static [Tag],
-    block_functions: Option<Functions>,
-    entity_functions: Option<Functions>,
-    item_functions: Option<Functions>,
-}
-
 ///ID类型
 pub type TypeID = u16;
 
@@ -27,23 +10,34 @@ pub enum Tag {
     Stone,
 }
 
+///每个ID写一个类型，实现这个Trait，此类型作为模块使用
+pub trait IDModule: 'static {
+    const TAG_LIST: &'static [Tag];
+    type BlockValue: Value; //若此ID不可作为方块，则使用()来禁用
+    type EntityValue: Value; //若此ID不可作为实体，则使用()来禁用
+    type ItemValue: Value; //若此ID不可作为物品，则使用()来禁用
+}
+
+///描述ID模块的信息
+#[derive(Copy, Clone)]
+pub struct IDModuleInfo {
+    tags: &'static [Tag], //此模块实现的Tag
+    block_functions: Option<Functions>, //方块的数据函数，若不能作为方块则为None
+    entity_functions: Option<Functions>, //实体的数据函数，若不能作为方块则为None
+    item_functions: Option<Functions>, //物品的数据函数，若不能作为方块则为None
+}
+
+///判定类型同一性
 pub const fn type_eq<T: ?Sized, U: ?Sized>() -> bool {
-    // Helper trait. `VALUE` is false, except for the specialization of the
-    // case where `T == U`.
     trait TraitEq<U: ?Sized> {
         const VALUE: bool;
     }
-
-    // Default implementation.
     impl<T: ?Sized, U: ?Sized> TraitEq<U> for T {
         default const VALUE: bool = false;
     }
-    
-    // Specialization for `T == U`.
-    impl<T: ?Sized> TraitEq<T> for T {
+     impl<T: ?Sized> TraitEq<T> for T {
         const VALUE: bool = true;
     }
-
     <T as TraitEq<U>>::VALUE
 }
 
@@ -74,10 +68,6 @@ const fn into_id_module_info<T: IDModule>() -> IDModuleInfo {
 
 
 
-
-
-
-
 ///每个NBT数据类型皆应实现此Trait
 pub trait Value: std::fmt::Debug+Eq+Clone {
     fn deserialize_from(src: &[u8]) -> *mut ();//必须正确实现，返回的type_id必须正确，不允许失败，无论src为何都必须正确alloc heap并返回*mut ()
@@ -89,10 +79,8 @@ impl Value for () {
     fn serialize_into(_dynamic_value: *const ()) -> Vec<u8> {unreachable!("IMPOSSIBLE TO TO CALL TYPE () AS VALUE")}
     fn drop(_dynamic_value: *mut ()) {unreachable!("IMPOSSIBLE TO TO CALL TYPE () AS VALUE")}
 }
-trait DynamicValue: Drop+Sized {
-    fn deserialize_from(src: &[u8], type_id: TypeID) -> Option<Self>;
-    fn serialize_into(&self) -> Vec<u8>;
-}
+
+///每个NBT类型的析构，反序列化，序列化函数，只需要实现数据读写即可
 #[derive(Copy, Clone)]
 struct Functions {
     drop: fn(*mut ()),
@@ -102,38 +90,16 @@ struct Functions {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+///TODO：编译期生成FEATURE_MAP，确保写了的ID模块全都被转换为TypeInfo
 pub mod _0;
 pub mod _1;
 
-///TODO：编译期生成FEATURE_MAP，确保写了的ID模块全都被转换为TypeInfo
 static FEATURE_MAP: [IDModuleInfo; 2] = [
     into_id_module_info::<_0::Module>(),
     into_id_module_info::<_1::Module>(),
 ];
 
+///根据Tag筛选ID
 pub fn filter_ids_by_tag(tag: Tag) -> Vec<TypeID> {
     use std::convert::TryFrom;
     let mut r = Vec::<TypeID>::with_capacity(4);
@@ -143,36 +109,23 @@ pub fn filter_ids_by_tag(tag: Tag) -> Vec<TypeID> {
     }
     r
 }
-///若type_id不存在于FEATURE_MAP而失败
+
+///若type_id不存在于FEATURE_MAP则返回None
 pub fn get_type_info_by_type_id(type_id: TypeID) -> Option<IDModuleInfo> {
     let i = usize::from(type_id);
     if i >= FEATURE_MAP.len() {None} else {Some(FEATURE_MAP[i])}
 }
 
 
+///类型擦除的值都实现这个Trait
+trait DynamicValue: Drop+Sized {
+    fn deserialize_from(src: &[u8], type_id: TypeID) -> Option<Self>;
+    fn serialize_into(&self) -> Vec<u8>;
+}
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+///方块类型
 pub struct BlockDynamicValue {
     data: *mut (),
     type_id: TypeID,
@@ -204,15 +157,7 @@ impl DynamicValue for BlockDynamicValue {
 
 
 
-
-
-
-
-
-
-
-
-
+///实体类型
 pub struct EntityDynamicValue {
     data: *mut (),
     type_id: TypeID,
@@ -244,19 +189,7 @@ impl DynamicValue for EntityDynamicValue {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+///物品类型
 pub struct ItemDynamicValue {
     data: *mut (),
     type_id: TypeID,
