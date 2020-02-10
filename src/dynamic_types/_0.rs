@@ -8,7 +8,7 @@ use super::Tag;
 pub struct Module {}
 impl IDModule for Module {
     const TYPE_ID: TypeID = 0;
-    const TAG_LIST: &'static [Tag] = &[Tag::Stone, Tag::CanBeBurn];
+    const TAG_LIST: &'static [Tag] = &[];
     type BlockValue = ();
     type EntityValue = Entity;
     type ItemValue = ();
