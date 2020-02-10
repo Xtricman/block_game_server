@@ -1,8 +1,5 @@
 ///石头
-use super::BlockValue;
-use super::BlockDynamicValue;
-use super::ItemValue;
-use super::ItemDynamicValue;
+use super::Value;
 use super::IDModule;
 use super::TypeID;
 use super::Tag;
@@ -20,34 +17,28 @@ impl IDModule for Module {
 
 #[derive(std::fmt::Debug)]
 pub struct Block {}
-impl BlockValue for Block {
+impl Value for Block {
     const SERIALIZED_SIZE_HINT: usize = 0;
-    fn deserialize_from(_src: &[u8]) -> BlockDynamicValue {
-        BlockDynamicValue {
-            data: std::ptr::null_mut(),
-            type_id: Module::TYPE_ID,
-        }
+    fn deserialize_from(_src: &[u8]) -> *mut () {
+        std::ptr::null_mut()
     }
-    fn serialize_into(_dynamic_value: &BlockDynamicValue) -> Vec<u8> {
+    fn serialize_into(_dynamic_value: *const ()) -> Vec<u8> {
         Vec::with_capacity(Self::SERIALIZED_SIZE_HINT)
     }
-    fn drop(_dynamic_value: &mut BlockDynamicValue) {}
+    fn drop(_dynamic_value: *mut ()) {}
 }
 
 
 
 #[derive(std::fmt::Debug)]
 pub struct Item {}
-impl ItemValue for Item {
+impl Value for Item {
     const SERIALIZED_SIZE_HINT: usize = 0;
-    fn deserialize_from(_src: &[u8]) -> ItemDynamicValue {
-        ItemDynamicValue {
-            data: std::ptr::null_mut(),
-            type_id: Module::TYPE_ID,
-        }
+    fn deserialize_from(_src: &[u8]) -> *mut () {
+        std::ptr::null_mut()
     }
-    fn serialize_into(_dynamic_value: &ItemDynamicValue) -> Vec<u8> {
-        vec![]
+    fn serialize_into(_dynamic_value: *const ()) -> Vec<u8> {
+        Vec::with_capacity(Self::SERIALIZED_SIZE_HINT)
     }
-    fn drop(_dynamic_types: &mut ItemDynamicValue) {}
+    fn drop(_dynamic_types: *mut ()) {}
 }
