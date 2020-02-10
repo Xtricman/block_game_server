@@ -18,7 +18,7 @@ impl IDModule for Module {
 
 #[derive(std::fmt::Debug)]
 pub struct Entity {
-    size: u64,
+    exp_amount: u64,
 }
 impl EntityValue for Entity {
     const SERIALIZED_SIZE_HINT: usize = 0;
@@ -38,8 +38,7 @@ impl EntityValue for Entity {
         }
     }
     fn serialize_into(dynamic_value: &EntityDynamicValue) -> Vec<u8> {
-        let p = dynamic_value.data as *const Entity;
-        let ra = unsafe{(*p).size}.to_le_bytes();
+        let ra = unsafe{&*(dynamic_value.data as *const Entity)}.exp_amount.to_le_bytes();//unsafe{&*(dynamic_value.data as *const Entity)}获取位于heap的Entity的引用
         (&ra[..]).to_vec()
     }
     fn drop(dynamic_value: &mut EntityDynamicValue) {
