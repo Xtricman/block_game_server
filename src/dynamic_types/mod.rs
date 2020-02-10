@@ -70,7 +70,7 @@ const fn into_id_module_info<T: IDModule>() -> IDModuleInfo {
 
 ///每个NBT数据类型皆应实现此Trait
 pub trait Value: std::fmt::Debug+Eq+Clone {
-    fn deserialize_from(src: &[u8]) -> *mut ();//必须正确实现，返回的type_id必须正确，不允许失败，无论src为何都必须正确alloc heap并返回*mut ()
+    fn deserialize_from(src: &[u8]) -> *mut ();
     fn serialize_into(dynamic_value: *const ()) -> Vec<u8>;//不允许失败，因为内存中的DynamicValue的数据一定处于正确的状态
     fn drop(dynamic_value: *mut ());//析构函数
 }
@@ -80,7 +80,7 @@ impl Value for () {
     fn drop(_dynamic_value: *mut ()) {unreachable!("IMPOSSIBLE TO TO CALL TYPE () AS VALUE")}
 }
 
-///每个NBT类型的析构，反序列化，序列化函数，只需要实现数据读写即可
+///每个NBT数据类型的析构，反序列化，序列化函数，只需要实现数据读写即可
 #[derive(Copy, Clone)]
 struct Functions {
     drop: fn(*mut ()),
@@ -117,7 +117,7 @@ pub fn get_type_info_by_type_id(type_id: TypeID) -> Option<IDModuleInfo> {
 }
 
 
-///类型擦除的值都实现这个Trait
+///方块、实体、物品都实现这个Trait
 trait DynamicValue: Drop+Sized {
     fn deserialize_from(src: &[u8], type_id: TypeID) -> Option<Self>;
     fn serialize_into(&self) -> Vec<u8>;

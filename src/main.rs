@@ -1,6 +1,7 @@
 #![feature(const_fn)]
 #![feature(const_if_match)]
 #![feature(specialization)]
+
 mod dynamic_types;
 
 fn main() {
