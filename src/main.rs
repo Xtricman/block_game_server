@@ -1,6 +1,6 @@
 #![feature(const_fn)]
 #![feature(const_if_match)]
-
+#![feature(specialization)]
 mod dynamic_types;
 
 fn main() {
@@ -42,10 +42,9 @@ struct Event;
 struct MapConnection {
     conn: rusqlite::Connection,
     players: std::collections::HashMap<EntityUUID, PlayerState>,
-    entities: std::collections::HashMap<EntityUUID, (EnitiyPosition, dynamic_types::DynamicValue)>,
-    blocks: std::collections::HashMap<BlockPostion, (dynamic_types::DynamicValue, u8)>,
-    biomes: std::collections::HashMap<StructureCoordinate, dynamic_types::TypeID<'static>>,
-    structures: std::collections::HashMap<StructureCoordinate, dynamic_types::DynamicValue>,
+    blocks: std::collections::HashMap<BlockPostion, (dynamic_types::BlockDynamicValue, u8)>,
+    entities: std::collections::HashMap<EntityUUID, (EnitiyPosition, dynamic_types::EntityDynamicValue)>,
+    structures: std::collections::HashMap<StructureCoordinate, dynamic_types::TypeID>,
     event_queue: std::collections::VecDeque<Event>,
 }
 
@@ -54,9 +53,8 @@ impl MapConnection {
         MapConnection {
             conn: rusqlite::Connection::open(file_name).expect("Open Fail!"),
             players: std::collections::HashMap::new(),
-            entities: std::collections::HashMap::new(),
             blocks: std::collections::HashMap::new(),
-            biomes: std::collections::HashMap::new(),
+            entities: std::collections::HashMap::new(),
             structures: std::collections::HashMap::new(),
             event_queue: std::collections::VecDeque::new()
         }
