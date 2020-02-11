@@ -16,6 +16,12 @@ pub trait IDModule: 'static {
     type BlockValue: Value; //若此ID不可作为方块，则使用()来禁用
     type EntityValue: Value; //若此ID不可作为实体，则使用()来禁用
     type ItemValue: Value; //若此ID不可作为物品，则使用()来禁用
+    const ID_MODULE_INFO: IDModuleInfo = IDModuleInfo {
+        tags: Self::TAG_LIST,
+        block_functions: Self::BlockValue::FUNCTIONS,
+        entity_functions: Self::EntityValue::FUNCTIONS,
+        item_functions: Self::ItemValue::FUNCTIONS,
+    }; //模块转换为IDModuleInfo
 }
 
 ///描述ID模块的信息
@@ -41,16 +47,6 @@ pub const fn type_eq<T: ?Sized, U: ?Sized>() -> bool {
     <T as TraitEq<U>>::VALUE
 }
 
-///将一个ID模块转换为IDModuleInfo值
-const fn into_id_module_info<T: IDModule>() -> IDModuleInfo {
-    IDModuleInfo {
-        tags: T::TAG_LIST,
-        block_functions: into_functions::<T::BlockValue>(),
-        entity_functions: into_functions::<T::EntityValue>(),
-        item_functions: into_functions::<T::ItemValue>(),
-    }
-}
-
 
 
 ///每个NBT数据类型皆应实现此Trait
@@ -58,6 +54,11 @@ pub trait Value: std::fmt::Debug+Eq+Clone {
     fn deserialize_from(src: &[u8]) -> *mut ();
     fn serialize_into(dynamic_value: *const ()) -> Vec<u8>;//不允许失败，因为内存中的DynamicValue的数据一定处于正确的状态
     fn drop(dynamic_value: *mut ());//析构函数
+    const FUNCTIONS: Option<Functions> = if !type_eq::<Self, ()>() {Some(Functions{
+        deserialize_from: Self::deserialize_from,
+        serialize_into: Self::serialize_into,
+        drop: Self::drop,
+    })} else {None}; //NBT数据类型转换为Functions
 }
 impl Value for () {
     fn deserialize_from(_src: &[u8]) -> *mut () {unreachable!("IMPOSSIBLE TO TO CALL TYPE () AS VALUE")}
@@ -67,29 +68,42 @@ impl Value for () {
 
 ///每个NBT数据类型的析构，反序列化，序列化函数，只需要实现数据读写即可
 #[derive(Copy, Clone)]
-struct Functions {
+pub struct Functions {
     drop: fn(*mut ()),
     deserialize_from: fn(&[u8]) -> *mut (),
     serialize_into: fn(*const ()) -> Vec<u8>,
 }
-const fn into_functions<T: Value>() -> Option<Functions> {
-    if !type_eq::<T, ()>() {Some(Functions{
-        deserialize_from: T::deserialize_from,
-        serialize_into: T::serialize_into,
-        drop: T::drop,
-    })} else {None}
+
+
+trace_macros!(true);
+macro_rules! expand_to_mod_dec {
+    ($i:ident $($rest:ident)*) => {
+        pub mod $i;
+        expand_to_mod_dec!($($rest)*);
+    };
+    () => {};
 }
+// macro_rules! expand_to_mod_info_list {
+//     ($i:ident $($rest:ident)*) => {
+//         $i::Module::ID_MODULE_INFO,
+//         expand_to_mod_info_list!($($rest)*);
+//     };
+//     () => {};
+// }
+macro_rules! count_ident {
+    ($i:ident $($rest:ident)*) => {
+        1+count_ident!($($rest)*);
+    };
+    () => {0};
+}
+///TODO：编译期生成FEATURE_MAP和mod声明，确保目录中存在的ID模块文件全都被转换为IDModuleInfo
+expand_to_mod_dec![exp_orb stone];
 
-
-
-///TODO：编译期生成FEATURE_MAP，确保写了的ID模块全都被转换为TypeInfo
-pub mod exp_orb;
-pub mod stone;
-
-static FEATURE_MAP: [IDModuleInfo; 2] = [
-    into_id_module_info::<exp_orb::Module>(),
-    into_id_module_info::<stone::Module>(),
+static FEATURE_MAP: [IDModuleInfo; count_ident![exp_orb stone]] = [
+    exp_orb::Module::ID_MODULE_INFO,
+    stone::Module::ID_MODULE_INFO,
 ];
+trace_macros!(false);
 
 ///根据Tag筛选ID
 pub fn filter_ids_by_tag(tag: Tag) -> Vec<TypeID> {
