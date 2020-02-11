@@ -43,26 +43,11 @@ pub const fn type_eq<T: ?Sized, U: ?Sized>() -> bool {
 
 ///将一个ID模块转换为IDModuleInfo值
 const fn into_id_module_info<T: IDModule>() -> IDModuleInfo {
-    let block = if !type_eq::<T::BlockValue, ()>() {Some(Functions{
-        deserialize_from: T::BlockValue::deserialize_from,
-        serialize_into: T::BlockValue::serialize_into,
-        drop: T::BlockValue::drop,
-    })} else {None};
-    let entity = if !type_eq::<T::EntityValue, ()>() {Some(Functions{
-        deserialize_from: T::EntityValue::deserialize_from,
-        serialize_into: T::EntityValue::serialize_into,
-        drop: T::EntityValue::drop,
-    })} else {None};
-    let item = if !type_eq::<T::ItemValue, ()>() {Some(Functions{
-        deserialize_from: T::ItemValue::deserialize_from,
-        serialize_into: T::ItemValue::serialize_into,
-        drop: T::ItemValue::drop,
-    })} else {None};
     IDModuleInfo {
         tags: T::TAG_LIST,
-        block_functions: block,
-        entity_functions: entity,
-        item_functions: item,
+        block_functions: into_functions::<T::BlockValue>(),
+        entity_functions: into_functions::<T::EntityValue>(),
+        item_functions: into_functions::<T::ItemValue>(),
     }
 }
 
@@ -86,6 +71,13 @@ struct Functions {
     drop: fn(*mut ()),
     deserialize_from: fn(&[u8]) -> *mut (),
     serialize_into: fn(*const ()) -> Vec<u8>,
+}
+const fn into_functions<T: Value>() -> Option<Functions> {
+    if !type_eq::<T, ()>() {Some(Functions{
+        deserialize_from: T::deserialize_from,
+        serialize_into: T::serialize_into,
+        drop: T::drop,
+    })} else {None}
 }
 
 
