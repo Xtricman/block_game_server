@@ -47,6 +47,7 @@ struct MapConnection {
     blocks: std::collections::HashMap<BlockPostion, (dynamic_types::BlockDynamicValue, u8)>,
     entities: std::collections::HashMap<EntityUUID, (EnitiyPosition, dynamic_types::EntityDynamicValue)>,
     structures: std::collections::HashMap<StructureCoordinate, dynamic_types::TypeID>,
+    globals: std::collections::HashMap<String, Vec<u8>>,
     event_queue: std::collections::VecDeque<Event>,
 }
 
@@ -58,6 +59,7 @@ impl MapConnection {
             blocks: std::collections::HashMap::new(),
             entities: std::collections::HashMap::new(),
             structures: std::collections::HashMap::new(),
+            globals: std::collections::HashMap::new(),
             event_queue: std::collections::VecDeque::new()
         }
     }
