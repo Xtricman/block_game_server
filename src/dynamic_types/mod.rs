@@ -75,35 +75,6 @@ pub struct Functions {
 }
 
 
-trace_macros!(true);
-macro_rules! expand_to_mod_dec {
-    ($i:ident $($rest:ident)*) => {
-        pub mod $i;
-        expand_to_mod_dec!($($rest)*);
-    };
-    () => {};
-}
-// macro_rules! expand_to_mod_info_list {
-//     ($i:ident $($rest:ident)*) => {
-//         $i::Module::ID_MODULE_INFO,
-//         expand_to_mod_info_list!($($rest)*);
-//     };
-//     () => {};
-// }
-macro_rules! count_ident {
-    ($i:ident $($rest:ident)*) => {
-        1+count_ident!($($rest)*);
-    };
-    () => {0};
-}
-///TODO：编译期生成FEATURE_MAP和mod声明，确保目录中存在的ID模块文件全都被转换为IDModuleInfo
-expand_to_mod_dec![exp_orb stone];
-
-static FEATURE_MAP: [IDModuleInfo; count_ident![exp_orb stone]] = [
-    exp_orb::Module::ID_MODULE_INFO,
-    stone::Module::ID_MODULE_INFO,
-];
-trace_macros!(false);
 
 ///根据Tag筛选ID
 pub fn filter_ids_by_tag(tag: Tag) -> Vec<TypeID> {
