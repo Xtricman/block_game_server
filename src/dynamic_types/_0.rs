@@ -3,7 +3,7 @@ use super::Value;
 use super::IDModule;
 use super::Tag;
 
-pub enum Module {}
+pub enum Module;
 impl IDModule for Module {
     const TAG_LIST: &'static [Tag] = &[];
     type BlockValue = ();
