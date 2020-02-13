@@ -50,7 +50,7 @@ pub const fn type_eq<T: ?Sized, U: ?Sized>() -> bool {
 
 
 ///每个NBT数据类型皆应实现此Trait
-pub trait Value: std::fmt::Debug+Eq+Clone+Sized {
+pub trait Value: std::fmt::Debug+Eq+Clone {
     fn deserialize_from(src: &[u8]) -> *mut ();//反序列化函数，必须返回一个非null且按照真实类型对其的指针
     fn serialize_into(dynamic_value: *const ()) -> Vec<u8>;//不允许失败，因为内存中的DynamicValue的数据一定处于正确的状态
     fn drop(dynamic_value: *mut ());//析构函数

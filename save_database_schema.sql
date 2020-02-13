@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS "entities" (
 	"y"	INTEGER NOT NULL,
 	"z"	INTEGER NOT NULL,
 	"type"	INTEGER NOT NULL CHECK(type>=0),
-	"data"	BLOB NOT NULL CHECK(length(data)>0),
+	"data"	BLOB NOT NULL CHECK(length(data)>=0),
 	PRIMARY KEY("uuid")
 ) WITHOUT ROWID;
 DROP TABLE IF EXISTS "blocks";
@@ -26,13 +26,13 @@ CREATE TABLE IF NOT EXISTS "blocks" (
 	"y"	INTEGER NOT NULL CHECK(y>=0),
 	"z"	INTEGER NOT NULL CHECK(z>=0),
 	"type"	INTEGER NOT NULL CHECK(type>=0),
-	"data"	BLOB NOT NULL CHECK(length(data)>0),
+	"data"	BLOB NOT NULL CHECK(length(data)>=0),
 	PRIMARY KEY("x","y","z")
 ) WITHOUT ROWID;
 DROP TABLE IF EXISTS "globals";
 CREATE TABLE IF NOT EXISTS "globals" (
 	"name"	TEXT NOT NULL CHECK(length(name)>0),
-	"value"	BLOB NOT NULL CHECK(length(value)>0),
+	"value"	BLOB NOT NULL CHECK(length(value)>=0),
 	PRIMARY KEY("name")
 ) WITHOUT ROWID;
 COMMIT;
