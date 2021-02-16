@@ -2,7 +2,7 @@
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
-#include "thirdparty/nlohmann_json/single_include/nlohmann/json.hpp"
+#include "thirdparty/nlohmann_json/json.hpp"
 
 using IDType = std::u8string_view;
 using Json = nlohmann::json;
