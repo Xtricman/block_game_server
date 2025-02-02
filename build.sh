@@ -1,0 +1,1 @@
+g++ -fPIC -shared -I/usr/include/python3.13 -o blockserver.so src/pymodule.cpp
