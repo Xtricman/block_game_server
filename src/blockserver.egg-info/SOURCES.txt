@@ -1,0 +1,6 @@
+pyproject.toml
+src/pymodule.cpp
+src/blockserver.egg-info/PKG-INFO
+src/blockserver.egg-info/SOURCES.txt
+src/blockserver.egg-info/dependency_links.txt
+src/blockserver.egg-info/top_level.txt
