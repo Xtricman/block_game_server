@@ -1,21 +1,13 @@
-#ifndef ORIENTATION
-#define ORIENTATION
+#ifndef ORIENTATION_HPP
+#define ORIENTATION_HPP
+
+
 #include <Python.h>
-namespace block_component::orientation {
-    enum class data_struct {
+namespace block_component {
+    enum class orientation {
         X, Y, Z
     };
-
-    PyType_Slot type_slot[] = {
-        {0, nullptr}
-    };
-    
-    PyType_Spec type_spec = {
-        .name = "orientation",
-        .basicsize = 0,
-        .itemsize = 0,
-        .slots = type_slot
-    };
-
 }
+
+
 #endif

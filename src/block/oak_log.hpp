@@ -1,22 +1,15 @@
-#ifndef OAK_LOG
-#define OAK_LOG
+#ifndef OAK_LOG_HPP
+#define OAK_LOG_HPP
+
+
 #include <Python.h>
+#include "block_component/orientation.hpp"
 
-namespace block::oak_log {
-    typedef struct  {
-    PyObject_HEAD
-    } data_struct;
-
-    PyType_Slot type_slot[] = {
-        {0,  nullptr}
-    };
-
-    PyType_Spec type_spec = {
-        .name = "oak_log",
-        .basicsize = 0,
-        .itemsize = 0,
-        .slots = type_slot
-    };
-
+namespace block {
+    struct oak_log {
+        block_component::orientation orientation;
+    } ;
 }
+
+
 #endif
