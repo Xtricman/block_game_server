@@ -1,7 +1,3 @@
-#ifndef OAK_LOG
-#define OAK_LOG
-#include <Python.h>
-
 namespace block::oak_log {
     typedef struct  {
     PyObject_HEAD
@@ -19,4 +15,3 @@ namespace block::oak_log {
     };
 
 }
-#endif

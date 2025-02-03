@@ -1,6 +1,4 @@
-#include <Python.h>
 #include "orientation.hpp"
-
 namespace block_component {
     PyModuleDef module_def = {
         .m_base =PyModuleDef_HEAD_INIT,

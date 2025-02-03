@@ -1,6 +1,3 @@
-#ifndef ORIENTATION
-#define ORIENTATION
-#include <Python.h>
 namespace block_component::orientation {
     enum class data_struct {
         X, Y, Z
@@ -18,4 +15,3 @@ namespace block_component::orientation {
     };
 
 }
-#endif
