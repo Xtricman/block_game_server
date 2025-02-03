@@ -2,7 +2,7 @@
 namespace block_component {
     PyModuleDef module_def = {
         .m_base =PyModuleDef_HEAD_INIT,
-        .m_name = "block",
+        .m_name = "block_component",
         .m_doc = "block_component types",
         .m_size = -1,
     };
