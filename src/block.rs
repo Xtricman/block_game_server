@@ -1,5 +1,4 @@
 use std::ops::Deref;
-use std::ops::DerefMut;
 
 #[repr(C)]
 pub struct BlockId;
@@ -28,12 +27,13 @@ impl Block {
         }
     }
     pub fn new_desirialize_from(type_id_raw: u32, state_raw: u32, mut blockentity_raw: &[u8]) -> Block {
+        let blockentity= rmpv::decode::read_value_ref(&mut blockentity_raw).unwrap_or(rmpv::ValueRef::Nil);
         match type_id_raw {
-            BlockId::Air => Block::new(Air::new_from_rmpv(state_raw, rmpv::decode::read_value_ref(&mut blockentity_raw).unwrap_or(rmpv::ValueRef::Nil))),
-            BlockId::Stone => Block::new(Stone::new_from_rmpv(state_raw, rmpv::decode::read_value_ref(&mut blockentity_raw).unwrap_or(rmpv::ValueRef::Nil))),
-            BlockId::OakLog => Block::new(OakLog::new_from_rmpv(state_raw, rmpv::decode::read_value_ref(&mut blockentity_raw).unwrap_or(rmpv::ValueRef::Nil))),
-            BlockId::BlockWithName => Block::new(BlockWithName::new_from_rmpv(state_raw, rmpv::decode::read_value_ref(&mut blockentity_raw).unwrap_or(rmpv::ValueRef::Nil))),
-            _ => Block::new(Air::new_from_rmpv(state_raw, rmpv::decode::read_value_ref(&mut blockentity_raw).unwrap_or(rmpv::ValueRef::Nil)))
+            BlockId::Air => Block::new(Air::new_from_rmpv(state_raw, blockentity)),
+            BlockId::Stone => Block::new(Stone::new_from_rmpv(state_raw, blockentity)),
+            BlockId::OakLog => Block::new(OakLog::new_from_rmpv(state_raw, blockentity)),
+            BlockId::BlockWithName => Block::new(BlockWithName::new_from_rmpv(state_raw, blockentity)),
+            _ => Block::new(Air::new_from_rmpv(state_raw, blockentity))
         }
     }
     pub fn serialize(s: &BlockBase) -> Vec<u8> {
