@@ -1,41 +1,43 @@
-use std::borrow::{Borrow, BorrowMut};
+use std::ops::Deref;
+use std::ops::DerefMut;
 
 #[repr(C)]
 pub struct BlockId;
 impl BlockId {
-    const Air: u32 = 0;
-    const Stone: u32 = 1;
-    const OakLog: u32 = 2;
-    const BlockWithName: u32 = 60000;
+    pub const Air: u32 = 0;
+    pub const Stone: u32 = 1;
+    pub const OakLog: u32 = 2;
+    pub const BlockWithName: u32 = 60000;
 }
 
 
 #[repr(C)]
 pub struct BlockBase {
-    type_id: u32,
-    block_state: u32
+    pub type_id: u32,
+    pub block_state: u32
 }
 
 #[repr(C)]
 pub struct Block {
-    base: *mut BlockBase
+    pub pointer: *const BlockBase
 }
 impl Block {
-    pub fn new<T>(a: Box<T>) -> Block {
+    pub fn new<T>(a: T) -> Block {
         Block {
-            base: Box::into_raw(a) as *mut BlockBase
+            pointer: Box::into_raw(Box::<T>::new(a)) as *const BlockBase
         }
     }
     pub fn new_desirialize_from(type_id_raw: u32, state_raw: u32, mut blockentity_raw: &[u8]) -> Block {
         match type_id_raw {
-            BlockId::Air => Block::new(Box::new(Air::new_from_rmpv(state_raw, rmpv::decode::read_value_ref(&mut blockentity_raw).unwrap_or(rmpv::ValueRef::Nil)))),
-            BlockId::Stone => Block::new(Box::new(Stone::new_from_rmpv(state_raw, rmpv::decode::read_value_ref(&mut blockentity_raw).unwrap_or(rmpv::ValueRef::Nil)))),
-            BlockId::OakLog => Block::new(Box::new(OakLog::new_from_rmpv(state_raw, rmpv::decode::read_value_ref(&mut blockentity_raw).unwrap_or(rmpv::ValueRef::Nil)))),
-            BlockId::BlockWithName => Block::new(Box::new(BlockWithName::new_from_rmpv(state_raw, rmpv::decode::read_value_ref(&mut blockentity_raw).unwrap_or(rmpv::ValueRef::Nil)))),
-            _ => Block::new(Box::new(Air::new_from_rmpv(state_raw, rmpv::decode::read_value_ref(&mut blockentity_raw).unwrap_or(rmpv::ValueRef::Nil))))
+            BlockId::Air => Block::new(Air::new_from_rmpv(state_raw, rmpv::decode::read_value_ref(&mut blockentity_raw).unwrap_or(rmpv::ValueRef::Nil))),
+            BlockId::Stone => Block::new(Stone::new_from_rmpv(state_raw, rmpv::decode::read_value_ref(&mut blockentity_raw).unwrap_or(rmpv::ValueRef::Nil))),
+            BlockId::OakLog => Block::new(OakLog::new_from_rmpv(state_raw, rmpv::decode::read_value_ref(&mut blockentity_raw).unwrap_or(rmpv::ValueRef::Nil))),
+            BlockId::BlockWithName => Block::new(BlockWithName::new_from_rmpv(state_raw, rmpv::decode::read_value_ref(&mut blockentity_raw).unwrap_or(rmpv::ValueRef::Nil))),
+            _ => Block::new(Air::new_from_rmpv(state_raw, rmpv::decode::read_value_ref(&mut blockentity_raw).unwrap_or(rmpv::ValueRef::Nil)))
         }
     }
     pub fn serialize(s: &BlockBase) -> Vec<u8> {
+        println!("Serializing {}", s.type_id);
         match s.type_id {
             BlockId::Air => unsafe{std::mem::transmute::<&BlockBase, &Air>(s)}.serialize(),
             BlockId::Stone => unsafe{std::mem::transmute::<&BlockBase, &Stone>(s)}.serialize(),
@@ -48,18 +50,18 @@ impl Block {
 impl Drop for Block {
     fn drop(&mut self) {
         unsafe {
-            match (*self.base).type_id {
+            match (*(self.pointer)).type_id {
                 BlockId::Air => {
-                    Box::from_raw(self.base as *mut Air);
+                    drop(Box::from_raw(self.pointer as *mut Air));
                 },
                 BlockId::Stone => {
-                    Box::from_raw(self.base as *mut Stone);
+                    drop(Box::from_raw(self.pointer as *mut Stone));
                 },
                 BlockId::OakLog => {
-                    Box::from_raw(self.base as *mut OakLog);
+                    drop(Box::from_raw(self.pointer as *mut OakLog));
                 },
                 BlockId::BlockWithName => {
-                    Box::from_raw(self.base as *mut BlockWithName);
+                    drop(Box::from_raw(self.pointer as *mut BlockWithName));
                 }
                 _ => {
                     // Handle other block types or do nothing
@@ -68,18 +70,17 @@ impl Drop for Block {
         }
     }
 }
-impl Borrow<BlockBase> for Block {
-    fn borrow(&self) -> &BlockBase {
-        unsafe {std::mem::transmute(self.base)}
-    }
-}
-impl BorrowMut<BlockBase> for Block {
-    fn borrow_mut(&mut self) -> &mut BlockBase {
-        unsafe {std::mem::transmute(self.base)}
+impl Deref for Block {
+    type Target = BlockBase;
+    fn deref(&self) -> &Self::Target {
+        unsafe{std::mem::transmute_copy(&self.pointer)}
     }
 }
 
 pub type BlockUpdateFunction = fn(&mut BlockBase, &mut crate::world::World);
+
+
+
 
 
 #[repr(C)]
@@ -99,6 +100,9 @@ impl Air {
     }
 }
 
+
+
+
 #[repr(C)]
 pub struct Stone {
     base: BlockBase
@@ -116,6 +120,9 @@ impl Stone {
         Vec::new()
     }
 }
+
+
+
 
 #[repr(C)]
 pub struct OakLog {
@@ -138,9 +145,13 @@ impl OakLog {
     }
 }
 
+
+
+
+#[repr(C)]
 pub struct BlockWithName {
-    base: BlockBase,
-    name: String
+    pub base: BlockBase,
+    pub name: String
 }
 impl BlockWithName {
     fn new_from_rmpv(state: u32, blockentity: rmpv::ValueRef) -> Self {
@@ -168,10 +179,13 @@ impl BlockWithName {
         r
     }
     fn serialize(&self) -> Vec<u8> {
+        println!("enter here!");
         let mut buf = rmp::encode::ByteBuf::new();
         rmp::encode::write_map_len(&mut buf, 1).unwrap();
         rmp::encode::write_str(&mut buf, "name");
         rmp::encode::write_str(&mut buf, &self.name);
-        buf.into_vec()
+        let r = buf.into_vec();
+        println!("{:#?}", r);
+        r
     }
 }

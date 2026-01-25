@@ -5,6 +5,9 @@ use std::collections::HashMap;
 
 fn main() {
     let mut block_update_funtions: HashMap<block::BlockId, block::BlockUpdateFunction> = HashMap::new();
+    let t = block::Block::new_desirialize_from(block::BlockId::BlockWithName, 2, b"\x81\xa4name\xd9\x11tyuiqwerdfqazwsxd");
+    let m = block::Block::serialize(&t);
+    println!("{:#?}", m);
 }
 
 #[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
