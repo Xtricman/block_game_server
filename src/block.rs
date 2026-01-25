@@ -37,7 +37,6 @@ impl Block {
         }
     }
     pub fn serialize(s: &BlockBase) -> Vec<u8> {
-        println!("Serializing {}", s.type_id);
         match s.type_id {
             BlockId::Air => unsafe{std::mem::transmute::<&BlockBase, &Air>(s)}.serialize(),
             BlockId::Stone => unsafe{std::mem::transmute::<&BlockBase, &Stone>(s)}.serialize(),
@@ -179,13 +178,11 @@ impl BlockWithName {
         r
     }
     fn serialize(&self) -> Vec<u8> {
-        println!("enter here!");
         let mut buf = rmp::encode::ByteBuf::new();
-        rmp::encode::write_map_len(&mut buf, 1).unwrap();
+        rmp::encode::write_map_len(&mut buf, 1);
         rmp::encode::write_str(&mut buf, "name");
         rmp::encode::write_str(&mut buf, &self.name);
         let r = buf.into_vec();
-        println!("{:#?}", r);
         r
     }
 }
