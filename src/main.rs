@@ -1,15 +1,10 @@
-#![feature(const_fn)]
-#![feature(const_if_match)]
-#![feature(specialization)]
-#![feature(trace_macros)]
+mod block;
+mod world;
 
-mod dynamic_types;
+use std::collections::HashMap;
 
 fn main() {
-    println!("{:?}", dynamic_types::filter_ids_by_tag(dynamic_types::Tag::CanBeBurn));
-    println!("{:?}", dynamic_types::filter_ids_by_tag(dynamic_types::Tag::RedStonePowerSource));
-    println!("{:?}", dynamic_types::filter_ids_by_tag(dynamic_types::Tag::Wood));
-    println!("{:?}", dynamic_types::filter_ids_by_tag(dynamic_types::Tag::Stone));
+    let mut block_update_funtions: HashMap<block::BlockId, block::BlockUpdateFunction> = HashMap::new();
 }
 
 #[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
@@ -22,9 +17,9 @@ struct BlockPostion {
 type EntityUUID = [u8;16];
 
 struct EnitiyPosition {
-    pub x: fixed::types::U60F4,
-    pub y: fixed::types::U60F4,
-    pub z: fixed::types::U60F4,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
 
 #[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
@@ -44,9 +39,9 @@ struct Event;
 struct MapConnection {
     conn: rusqlite::Connection,
     players: std::collections::HashMap<EntityUUID, PlayerState>,
-    blocks: std::collections::HashMap<BlockPostion, (dynamic_types::BlockDynamicValue, u8)>,
-    entities: std::collections::HashMap<EntityUUID, (EnitiyPosition, dynamic_types::EntityDynamicValue)>,
-    structures: std::collections::HashMap<StructureCoordinate, dynamic_types::TypeID>,
+    blocks: std::collections::HashMap<BlockPostion, block::Block>,
+    entities: std::collections::HashMap<EntityUUID, (EnitiyPosition, ())>,
+    structures: std::collections::HashMap<StructureCoordinate, ()>,
     globals: std::collections::HashMap<String, Vec<u8>>,
     event_queue: std::collections::VecDeque<Event>,
 }
