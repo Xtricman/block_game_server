@@ -149,8 +149,8 @@ impl OakLog {
 
 #[repr(C)]
 pub struct BlockWithName {
-    pub base: BlockBase,
-    pub name: String
+    base: BlockBase,
+    name: String
 }
 impl BlockWithName {
     fn new_from_rmpv(state: u32, blockentity: rmpv::ValueRef) -> Self {
