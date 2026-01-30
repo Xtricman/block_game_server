@@ -1,3 +1,4 @@
+use core::panic;
 use std::ops::Deref;
 
 #[repr(C)]
@@ -18,12 +19,12 @@ pub struct BlockBase {
 
 #[repr(C)]
 pub struct Block {
-    pub pointer: *const BlockBase
+    pub pointer: *mut BlockBase
 }
 impl Block {
     pub fn new<T>(a: T) -> Block {
         Block {
-            pointer: Box::into_raw(Box::<T>::new(a)) as *const BlockBase
+            pointer: Box::into_raw(Box::<T>::new(a)) as *mut BlockBase
         }
     }
     pub fn new_desirialize_from(type_id_raw: u32, state_raw: u32, mut blockentity_raw: &[u8]) -> Block {
@@ -36,20 +37,26 @@ impl Block {
             _ => Block::new(Air::new_from_rmpv(state_raw, blockentity))
         }
     }
-    pub fn serialize(s: &BlockBase) -> Vec<u8> {
-        match s.type_id {
-            BlockId::Air => unsafe{std::mem::transmute::<&BlockBase, &Air>(s)}.serialize(),
-            BlockId::Stone => unsafe{std::mem::transmute::<&BlockBase, &Stone>(s)}.serialize(),
-            BlockId::OakLog => unsafe{std::mem::transmute::<&BlockBase, &OakLog>(s)}.serialize(),
-            BlockId::BlockWithName => unsafe{std::mem::transmute::<&BlockBase, &BlockWithName>(s)}.serialize(),
-            _ => unsafe{std::mem::transmute::<&BlockBase, &Air>(s)}.serialize()
+    pub fn serialize(&self) -> Vec<u8> {
+        let tmp = unsafe{std::ptr::read(self.pointer)};
+        let d = tmp.type_id;
+        std::mem::forget(tmp);
+        match d {
+            BlockId::Air => unsafe{std::mem::transmute_copy::<Block, &Air>(self)}.serialize(),
+            BlockId::Stone => unsafe{std::mem::transmute_copy::<Block, &Stone>(self)}.serialize(),
+            BlockId::OakLog => unsafe{std::mem::transmute_copy::<Block, &OakLog>(self)}.serialize(),
+            BlockId::BlockWithName => unsafe{std::mem::transmute_copy::<Block, &BlockWithName>(self)}.serialize(),
+            _ => panic!("Serializing an unknown type_id!")
         }
     }
 }
 impl Drop for Block {
     fn drop(&mut self) {
         unsafe {
-            match (*(self.pointer)).type_id {
+            let tmp = std::ptr::read(self.pointer);
+            let d = tmp.type_id;
+            std::mem::forget(tmp);
+            match d {
                 BlockId::Air => {
                     drop(Box::from_raw(self.pointer as *mut Air));
                 },
@@ -69,14 +76,8 @@ impl Drop for Block {
         }
     }
 }
-impl Deref for Block {
-    type Target = BlockBase;
-    fn deref(&self) -> &Self::Target {
-        unsafe{std::mem::transmute_copy(&self.pointer)}
-    }
-}
 
-pub type BlockUpdateFunction = fn(&mut BlockBase, &mut crate::world::World);
+pub type BlockUpdateFunction = fn(&mut Block, &mut crate::world::World);
 
 
 
