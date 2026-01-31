@@ -1,5 +1,4 @@
 use core::panic;
-use std::ops::Deref;
 
 #[repr(C)]
 pub struct BlockId;
@@ -48,6 +47,18 @@ impl Block {
             BlockId::BlockWithName => unsafe{std::mem::transmute_copy::<Block, &BlockWithName>(self)}.serialize(),
             _ => panic!("Serializing an unknown type_id!")
         }
+    }
+    pub fn get_type_id(&self) -> u32 {
+        let tmp = unsafe{std::ptr::read(self.pointer)};
+        let d = tmp.type_id;
+        std::mem::forget(tmp);
+        d
+    }
+    pub unsafe fn into_real_type_ref<T>(&self) -> &T {
+        unsafe {std::mem::transmute_copy::<Block, &T>(self)}
+    }
+    pub unsafe fn into_real_type_mut_ref<T>(&self) -> &mut T {
+        unsafe {std::mem::transmute_copy::<Block, &mut T>(self)}
     }
 }
 impl Drop for Block {
